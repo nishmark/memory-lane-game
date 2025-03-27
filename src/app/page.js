@@ -1,4 +1,3 @@
-// src/app/page.js
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -48,8 +47,6 @@ function SubmitButton({ onClick }) {
   );
 }
 
-// Game Controls Component (Removed Give Up and Show buttons)
-// Game Controls Component (Submit and Start buttons on the same line)
 // Game Controls Component (Submit centered, Start on right)
 function GameControls({ onStartGame, onSubmit }) {
   return (
@@ -122,7 +119,7 @@ function PlayerSection({ playerNumber, isActive }) {
           className="object-contain aspect-square w-[150px]"
         />
         <h2
-          className={`absolute top-4/4  text-center ${
+          className={`absolute top-4/4 text-center ${
             isActive ? "shadow-[0_0_10px_rgba(255,255,0,0.8)]" : ""
           }`}
         >
@@ -161,13 +158,19 @@ function MemoryLaneGame() {
   } = useGameLogic();
 
   const [playerInput, setPlayerInput] = useState(Array(20).fill(""));
+  const [successAudio, setSuccessAudio] = useState(null); // Initialize as null
+  const [failureAudio, setFailureAudio] = useState(null); // Initialize as null
 
-  // Audio objects for success and failure
-  const successAudio = new Audio("/allRight.mp3");
-  const failureAudio = new Audio("/oyoy.mp3");
+  // Initialize Audio objects only in the browser
+  useEffect(() => {
+    if (typeof window !== "undefined") { // Check if running in browser
+      setSuccessAudio(new Audio("/allRight.mp3"));
+      setFailureAudio(new Audio("/oyoy.mp3"));
+    }
+  }, []); // Empty dependency array means it runs once on mount
 
-  const playSuccess = () => successAudio.play();
-  const playFailure = () => failureAudio.play();
+  const playSuccess = () => successAudio?.play(); // Use optional chaining
+  const playFailure = () => failureAudio?.play(); // Use optional chaining
 
   const startGame = () => {
     originalStartGame();
