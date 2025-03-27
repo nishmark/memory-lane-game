@@ -47,18 +47,21 @@ function SubmitButton({ onClick }) {
   );
 }
 
-// Game Controls Component (Submit centered, Start on right)
-function GameControls({ onStartGame, onSubmit }) {
+// Game Controls Component (Submit centered, Start on right, appreciation below)
+function GameControls({ onStartGame, onSubmit, appreciation }) {
   return (
-    <section className="flex justify-center items-center mt-10 w-full font-bold text-center whitespace-nowrap relative">
-      <SubmitButton onClick={onSubmit} />
-      <button
-        className="absolute right-0 px-12 pt-2 pb-2 text-3xl rounded-3xl bg-zinc-500 text-black -mt-2 mr-3"
-        onClick={onStartGame}
-        aria-label="Start the game"
-      >
-        START
-      </button>
+    <section className="flex flex-col justify-center items-center mt-10 w-full font-bold text-center whitespace-nowrap relative">
+      <div className="flex justify-center items-center w-full relative">
+        <SubmitButton onClick={onSubmit} />
+        <button
+          className="absolute right-0 px-12 pt-2 pb-2 text-3xl rounded-3xl bg-zinc-500 text-black -mt-2 mr-3"
+          onClick={onStartGame}
+          aria-label="Start the game"
+        >
+          START
+        </button>
+      </div>
+      {appreciation && <p className="mt-4 text-lg text-white">{appreciation}</p>} {/* Only show if appreciation exists */}
     </section>
   );
 }
@@ -130,6 +133,16 @@ function PlayerSection({ playerNumber, isActive }) {
   );
 }
 
+// Score Display Component
+function ScoreDisplay({ score }) {
+  return (
+    <div className="flex flex-col items-center justify-center text-white">
+      <h3 className="text-2xl font-bold uppercase">SCORE</h3>
+      <p className="text-4xl font-bold">{score}</p>
+    </div>
+  );
+}
+
 // Game Header Component
 function GameHeader({ gameStarted }) {
   return (
@@ -153,28 +166,30 @@ function MemoryLaneGame() {
     sequence,
     playerTurn,
     instruction,
+    score,
+    currentAppreciation,
     startGame: originalStartGame,
     submitInput,
   } = useGameLogic();
 
   const [playerInput, setPlayerInput] = useState(Array(20).fill(""));
-  const [successAudio, setSuccessAudio] = useState(null); // Initialize as null
-  const [failureAudio, setFailureAudio] = useState(null); // Initialize as null
+  const [successAudio, setSuccessAudio] = useState(null);
+  const [failureAudio, setFailureAudio] = useState(null);
 
   // Initialize Audio objects only in the browser
   useEffect(() => {
-    if (typeof window !== "undefined") { // Check if running in browser
+    if (typeof window !== "undefined") {
       setSuccessAudio(new Audio("/allRight.mp3"));
       setFailureAudio(new Audio("/oyoy.mp3"));
     }
-  }, []); // Empty dependency array means it runs once on mount
+  }, []);
 
-  const playSuccess = () => successAudio?.play(); // Use optional chaining
-  const playFailure = () => failureAudio?.play(); // Use optional chaining
+  const playSuccess = () => successAudio?.play();
+  const playFailure = () => failureAudio?.play();
 
   const startGame = () => {
     originalStartGame();
-    setPlayerInput(Array(20).fill("")); // Clear input on start
+    setPlayerInput(Array(20).fill(""));
   };
 
   const handleInputChange = (index, value) => {
@@ -195,15 +210,16 @@ function MemoryLaneGame() {
       return;
     }
     submitInput(inputArray, playSuccess, playFailure);
-    setPlayerInput(Array(20).fill("")); // Clear input after submission
+    setPlayerInput(Array(20).fill(""));
   };
 
   return (
     <section className="flex flex-col max-w-full w-[954px] text-white">
       <GameHeader gameStarted={gameStarted} />
       <div className="self-center mt-7 max-w-full w-[577px]">
-        <div className="flex gap-5 max-md:flex-col">
+        <div className="flex gap-5 max-md:flex-col items-center">
           <PlayerSection playerNumber={1} isActive={gameStarted && playerTurn} />
+          <ScoreDisplay score={score} />
           <PlayerSection playerNumber={2} isActive={gameStarted && !playerTurn} />
         </div>
       </div>
@@ -218,6 +234,7 @@ function MemoryLaneGame() {
       <GameControls
         onStartGame={startGame}
         onSubmit={handleSubmit}
+        appreciation={currentAppreciation}
       />
     </section>
   );
